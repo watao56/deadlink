@@ -30,44 +30,25 @@ export default function ScanForm() {
   }
 
   return (
-    <form onSubmit={handleScan} className="w-full max-w-2xl mx-auto">
-      <div className="relative flex gap-3 p-2 bg-surface-200 rounded-2xl border border-surface-300/50 focus-within:border-brand-500/50 transition-all focus-within:shadow-lg focus-within:shadow-brand-500/10">
-        <div className="flex-1 flex items-center gap-3 pl-4">
-          <svg className="w-5 h-5 text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-          </svg>
-          <input
-            type="url"
-            required
-            placeholder="https://example.com"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 bg-transparent py-3 text-white placeholder-gray-500 focus:outline-none text-lg"
-          />
-        </div>
+    <form onSubmit={handleScan} className="w-full max-w-lg mx-auto">
+      <div className="flex gap-2">
+        <input
+          type="url"
+          required
+          placeholder="https://example.com"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-shadow"
+        />
         <button
           type="submit"
           disabled={loading}
-          className="px-8 py-3 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-xl font-semibold hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-brand-500/25 active:scale-[0.98]"
+          className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          {loading ? (
-            <span className="flex items-center gap-2">
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              スキャン中...
-            </span>
-          ) : (
-            "スキャン"
-          )}
+          {loading ? "スキャン中..." : "スキャン"}
         </button>
       </div>
-      {error && (
-        <p className="mt-3 text-danger text-sm bg-danger/10 px-4 py-2 rounded-lg">
-          {error}
-        </p>
-      )}
+      {error && <p className="mt-2 text-danger text-sm">{error}</p>}
     </form>
   );
 }

@@ -29,10 +29,10 @@ interface Report {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    ok: "bg-success/10 text-success border-success/20",
-    broken: "bg-danger/10 text-danger border-danger/20",
-    timeout: "bg-danger/10 text-danger border-danger/20",
-    redirect: "bg-warning/10 text-warning border-warning/20",
+    ok: "bg-emerald-50 text-emerald-700",
+    broken: "bg-red-50 text-red-700",
+    timeout: "bg-red-50 text-red-700",
+    redirect: "bg-amber-50 text-amber-700",
   };
   const labels: Record<string, string> = {
     ok: "正常",
@@ -41,24 +41,9 @@ function StatusBadge({ status }: { status: string }) {
     redirect: "リダイレクト",
   };
   return (
-    <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full border ${styles[status] || styles.broken}`}>
+    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded ${styles[status] || styles.broken}`}>
       {labels[status] || status}
     </span>
-  );
-}
-
-function StatCard({ value, label, color }: { value: number; label: string; color: string }) {
-  const colorMap: Record<string, string> = {
-    brand: "from-brand-500/20 to-brand-600/20 border-brand-500/20 text-brand-400",
-    danger: "from-danger/20 to-red-600/20 border-danger/20 text-danger",
-    warning: "from-warning/20 to-amber-600/20 border-warning/20 text-warning",
-    success: "from-success/20 to-emerald-600/20 border-success/20 text-success",
-  };
-  return (
-    <div className={`bg-gradient-to-br ${colorMap[color]} border rounded-2xl p-6 text-center`}>
-      <div className={`text-4xl font-bold mb-1 ${colorMap[color].split(" ").pop()}`}>{value}</div>
-      <div className="text-sm text-gray-400">{label}</div>
-    </div>
   );
 }
 
@@ -93,7 +78,8 @@ export default function ScanResultPage() {
   const redirects = report?.results?.filter((r) => r.status === "redirect") || [];
   const ok = report?.results?.filter((r) => r.status === "ok") || [];
 
-  const filtered = filter === "all" ? (report?.results || [])
+  const filtered =
+    filter === "all" ? (report?.results || [])
     : filter === "broken" ? broken
     : filter === "redirect" ? redirects
     : ok;
@@ -101,84 +87,62 @@ export default function ScanResultPage() {
   return (
     <>
       <Header />
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 animate-fade-in">
-          <h1 className="text-3xl font-bold mb-2">スキャン結果</h1>
+      <main className="max-w-3xl mx-auto px-6 py-10">
+        <div className="mb-8">
+          <h1 className="text-lg font-semibold text-gray-900 mb-1">スキャン結果</h1>
           {report?.url && (
-            <p className="text-gray-400 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.172 13.828a4 4 0 015.656 0l4-4a4 4 0 00-5.656-5.656l-1.102 1.101" />
-              </svg>
-              {report.url}
-            </p>
+            <p className="text-sm text-gray-400">{report.url}</p>
           )}
         </div>
 
-        {/* Loading state */}
+        {/* Loading */}
         {loading && report?.status === "running" && (
-          <div className="mb-8 animate-fade-in">
-            <div className="relative p-6 bg-surface-100 border border-brand-500/20 rounded-2xl overflow-hidden">
-              {/* Scan line animation */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-surface-200">
-                <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-brand-500 to-transparent animate-scan-line" />
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full border-2 border-brand-500/30 border-t-brand-500 animate-spin" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-3 h-3 bg-brand-500 rounded-full animate-pulse" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-white font-medium">スキャン中...</p>
-                  <p className="text-gray-400 text-sm">
-                    {report?.pages_scanned || 0} ページ巡回済み · {report?.total_links || 0} リンクチェック済み
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="mb-8 flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+            <span className="text-sm text-gray-600">
+              スキャン中… {report?.pages_scanned || 0}ページ巡回 · {report?.total_links || 0}リンク検出
+            </span>
           </div>
         )}
 
         {error && (
-          <div className="mb-8 p-4 bg-danger/10 border border-danger/20 rounded-xl text-danger animate-fade-in">
-            {error}
-          </div>
+          <p className="mb-6 text-sm text-danger">{error}</p>
         )}
 
         {report && report.status !== "running" && (
-          <div className="animate-slide-up">
-            {/* Summary stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <StatCard value={report.total_links} label="総リンク数" color="brand" />
-              <StatCard value={report.broken_links} label="リンク切れ" color="danger" />
-              <StatCard value={report.redirected_links} label="リダイレクト" color="warning" />
-              <StatCard value={report.total_links - report.broken_links - report.redirected_links} label="正常" color="success" />
+          <>
+            {/* Summary */}
+            <div className="grid grid-cols-4 gap-3 mb-8">
+              {[
+                { label: "総リンク", value: report.total_links, color: "text-gray-900" },
+                { label: "リンク切れ", value: report.broken_links, color: "text-red-600" },
+                { label: "リダイレクト", value: report.redirected_links, color: "text-amber-600" },
+                { label: "正常", value: report.total_links - report.broken_links - report.redirected_links, color: "text-emerald-600" },
+              ].map((s, i) => (
+                <div key={i} className="p-4 bg-gray-50 rounded-lg text-center">
+                  <div className={`text-2xl font-semibold tabular-nums ${s.color}`}>{s.value}</div>
+                  <div className="text-xs text-gray-400 mt-1">{s.label}</div>
+                </div>
+              ))}
             </div>
 
-            {/* Meta info */}
-            {(report.pages_scanned || report.duration_ms) && (
-              <div className="flex gap-4 mb-8 text-sm text-gray-500">
-                {report.pages_scanned && <span>📄 {report.pages_scanned} ページをクロール</span>}
-                {report.duration_ms && <span>⏱️ {(report.duration_ms / 1000).toFixed(1)}秒</span>}
-              </div>
-            )}
+            {/* Meta */}
+            <div className="flex gap-4 mb-6 text-xs text-gray-400">
+              {report.pages_scanned && <span>{report.pages_scanned}ページクロール</span>}
+              {report.duration_ms && <span>{(report.duration_ms / 1000).toFixed(1)}秒</span>}
+            </div>
 
             {/* All clear */}
             {broken.length === 0 && (
-              <div className="mb-8 p-8 bg-gradient-to-br from-success/5 to-emerald-600/5 border border-success/20 rounded-2xl text-center">
-                <div className="text-5xl mb-4">✅</div>
-                <p className="text-xl font-bold text-success mb-1">リンク切れは見つかりませんでした！</p>
-                <p className="text-gray-400">すべてのリンクが正常に動作しています。</p>
+              <div className="mb-8 p-6 bg-emerald-50 rounded-lg text-center">
+                <p className="text-sm font-medium text-emerald-700">リンク切れは見つかりませんでした</p>
               </div>
             )}
 
-            {/* Filter tabs */}
+            {/* Filter */}
             {report.results && report.results.length > 0 && (
               <>
-                <div className="flex gap-2 mb-6 overflow-x-auto">
+                <div className="flex gap-1 mb-4 border-b border-gray-100">
                   {[
                     { key: "all" as const, label: "すべて", count: report.results.length },
                     { key: "broken" as const, label: "リンク切れ", count: broken.length },
@@ -188,10 +152,10 @@ export default function ScanResultPage() {
                     <button
                       key={key}
                       onClick={() => setFilter(key)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                      className={`px-3 py-2 text-xs font-medium transition-colors border-b-2 -mb-px ${
                         filter === key
-                          ? "bg-brand-600 text-white"
-                          : "bg-surface-200 text-gray-400 hover:text-white hover:bg-surface-300"
+                          ? "border-gray-900 text-gray-900"
+                          : "border-transparent text-gray-400 hover:text-gray-600"
                       }`}
                     >
                       {label} ({count})
@@ -199,30 +163,29 @@ export default function ScanResultPage() {
                   ))}
                 </div>
 
-                {/* Results list */}
-                <div className="space-y-3">
+                {/* Results */}
+                <div className="divide-y divide-gray-100">
                   {filtered.map((r, i) => (
-                    <div
-                      key={i}
-                      className="p-4 bg-surface-100 border border-surface-300/50 rounded-xl hover:border-surface-400 transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-4 mb-2">
-                        <div className="font-mono text-sm text-gray-200 break-all flex-1">
-                          {r.link_url}
+                    <div key={i} className="py-3 first:pt-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-gray-900 font-mono break-all leading-relaxed">
+                            {r.link_url}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {r.source_page}
+                            {r.status_code ? ` · ${r.status_code}` : " · タイムアウト"}
+                            {r.anchor_text ? ` · "${r.anchor_text}"` : ""}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0 pt-0.5">
                           {r.link_type && (
-                            <span className="text-xs px-2 py-0.5 rounded bg-surface-300 text-gray-400">
+                            <span className="text-[10px] text-gray-400 uppercase tracking-wide">
                               {r.link_type === "internal" ? "内部" : "外部"}
                             </span>
                           )}
                           <StatusBadge status={r.status} />
                         </div>
-                      </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-                        <span>検出: {r.source_page}</span>
-                        <span>ステータス: {r.status_code || "N/A"}</span>
-                        {r.anchor_text && <span>テキスト: {r.anchor_text}</span>}
                       </div>
                     </div>
                   ))}
@@ -231,20 +194,18 @@ export default function ScanResultPage() {
             )}
 
             {/* CTA */}
-            <div className="mt-12 p-8 bg-gradient-to-br from-surface-100 to-surface-200 border border-surface-300/50 rounded-2xl text-center">
-              <p className="font-bold text-xl mb-2 text-white">定期的にチェックしませんか？</p>
-              <p className="text-gray-400 mb-6">無料登録で週1回の自動チェック + メール通知</p>
+            <div className="mt-12 pt-8 border-t border-gray-100 text-center">
+              <p className="text-sm text-gray-500 mb-4">
+                定期チェックと通知を設定できます
+              </p>
               <Link
                 href="/auth/login"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-xl font-medium hover:from-brand-500 hover:to-brand-400 transition-all hover:shadow-lg hover:shadow-brand-500/25"
+                className="inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
               >
-                無料で定期監視を始める
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+                アカウント作成
               </Link>
             </div>
-          </div>
+          </>
         )}
       </main>
     </>
