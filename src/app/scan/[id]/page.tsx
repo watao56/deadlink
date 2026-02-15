@@ -106,7 +106,7 @@ export default function ScanResultPage() {
         )}
 
         {error && (
-          <p className="mb-6 text-sm text-danger">{error}</p>
+          <p className="mb-6 text-sm text-red-600">{error}</p>
         )}
 
         {report && report.status !== "running" && (

@@ -75,8 +75,16 @@ export default function Home() {
         </section>
 
         {/* Footer */}
-        <footer className="py-8 px-6 border-t border-gray-100 text-center text-xs text-gray-400">
-          © 2025 DeadLink
+        <footer className="py-10 px-6 border-t border-gray-100">
+          <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+            <span>© 2025 DeadLink</span>
+            <div className="flex gap-6">
+              <a href="/pricing" className="hover:text-gray-600 transition-colors">料金</a>
+              <a href="#" className="hover:text-gray-600 transition-colors">利用規約</a>
+              <a href="#" className="hover:text-gray-600 transition-colors">プライバシーポリシー</a>
+              <a href="#" className="hover:text-gray-600 transition-colors">お問い合わせ</a>
+            </div>
+          </div>
         </footer>
       </main>
     </>

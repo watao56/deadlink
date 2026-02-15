@@ -31,8 +31,8 @@ export default function LoginPage() {
   return (
     <>
       <Header />
-      <main className="max-w-md mx-auto px-4 py-16">
-        <h1 className="text-2xl font-bold mb-8 text-center">ログイン / 新規登録</h1>
+      <main className="max-w-sm mx-auto px-6 py-20">
+        <h1 className="text-xl font-semibold mb-8 text-center text-gray-900">ログイン / 新規登録</h1>
 
         <button
           onClick={handleGitHub}
@@ -44,7 +44,7 @@ export default function LoginPage() {
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-300" /></div>
-          <div className="relative flex justify-center text-sm"><span className="bg-gray-50 px-2 text-gray-500">または</span></div>
+          <div className="relative flex justify-center text-sm"><span className="bg-white px-2 text-gray-400">または</span></div>
         </div>
 
         {sent ? (

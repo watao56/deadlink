@@ -38,7 +38,7 @@ export default function ScanForm() {
           placeholder="https://example.com"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-shadow"
+          className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-shadow"
         />
         <button
           type="submit"
@@ -48,7 +48,7 @@ export default function ScanForm() {
           {loading ? "スキャン中..." : "スキャン"}
         </button>
       </div>
-      {error && <p className="mt-2 text-danger text-sm">{error}</p>}
+      {error && <p className="mt-2 text-red-600 text-sm">{error}</p>}
     </form>
   );
 }
