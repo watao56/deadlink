@@ -8,6 +8,7 @@ export interface LinkResult {
   redirect_to?: string;
   anchor_text: string;
   checked_at: string;
+  link_type: "internal" | "external";
 }
 
 export async function crawlSite(
@@ -18,10 +19,10 @@ export async function crawlSite(
   const baseUrl = new URL(siteUrl);
   const visited = new Set<string>();
   const toVisit = [siteUrl];
-  const allLinks = new Map<string, { source: string; text: string }>();
+  const allLinks = new Map<string, { source: string; text: string; type: "internal" | "external" }>();
   const results: LinkResult[] = [];
 
-  // Phase 1: Crawl internal pages and collect all links
+  // Phase 1: Crawl internal pages and collect ALL links
   while (toVisit.length > 0 && visited.size < maxPages) {
     const pageUrl = toVisit.shift()!;
     if (visited.has(pageUrl)) continue;
@@ -56,17 +57,16 @@ export async function crawlSite(
         fullUrl = u.href;
 
         const text = $(el).text().trim().substring(0, 100);
+        const isInternal = u.hostname === baseUrl.hostname;
 
         // Internal link - add to crawl queue
-        if (u.hostname === baseUrl.hostname && !visited.has(fullUrl)) {
+        if (isInternal && !visited.has(fullUrl)) {
           toVisit.push(fullUrl);
         }
 
-        // Track all external links
-        if (u.hostname !== baseUrl.hostname) {
-          if (!allLinks.has(fullUrl)) {
-            allLinks.set(fullUrl, { source: pageUrl, text });
-          }
+        // Track ALL links for checking (deduplicate by URL)
+        if (!allLinks.has(fullUrl)) {
+          allLinks.set(fullUrl, { source: pageUrl, text, type: isInternal ? "internal" : "external" });
         }
       });
 
@@ -77,9 +77,24 @@ export async function crawlSite(
     }
   }
 
-  // Phase 2: Check all external links
+  // Phase 2: Check all collected links
   const linkEntries = Array.from(allLinks.entries());
-  for (const [linkUrl, { source, text }] of linkEntries) {
+  for (const [linkUrl, { source, text, type }] of linkEntries) {
+    // Skip already-visited internal pages (we know they're ok)
+    if (type === "internal" && visited.has(linkUrl)) {
+      results.push({
+        link_url: linkUrl,
+        source_page: source,
+        status_code: 200,
+        status: "ok",
+        anchor_text: text,
+        checked_at: new Date().toISOString(),
+        link_type: type,
+      });
+      if (onProgress) onProgress(results.length);
+      continue;
+    }
+
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
@@ -107,6 +122,7 @@ export async function crawlSite(
         redirect_to: res.headers.get("location") || undefined,
         anchor_text: text,
         checked_at: new Date().toISOString(),
+        link_type: type,
       });
     } catch {
       results.push({
@@ -116,6 +132,7 @@ export async function crawlSite(
         status: "timeout",
         anchor_text: text,
         checked_at: new Date().toISOString(),
+        link_type: type,
       });
     }
 

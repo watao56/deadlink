@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "DeadLink - リンク切れ自動検知サービス",
@@ -8,8 +11,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja">
-      <body className="bg-gray-50 text-gray-900 antialiased">{children}</body>
+    <html lang="ja" className="dark">
+      <body className={`${inter.className} bg-surface-50 text-gray-100 antialiased min-h-screen`}>
+        {children}
+      </body>
     </html>
   );
 }
