@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { putReport, putResult } from "@/lib/dynamodb";
 import { crawlSite } from "@/lib/crawler";
 import { randomUUID } from "crypto";
+
+export const maxDuration = 60;
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
@@ -38,25 +41,29 @@ export async function POST(request: NextRequest) {
     });
 
     const startTime = Date.now();
-    crawlSite(url, 20).then(async ({ results, pagesScanned }) => {
-      const broken = results.filter(r => r.status === "broken" || r.status === "timeout").length;
-      const redirected = results.filter(r => r.status === "redirect").length;
 
-      for (const result of results) {
-        await putResult({ ...result, report_id: reportId });
+    after(async () => {
+      try {
+        const { results, pagesScanned } = await crawlSite(url, 20);
+        const broken = results.filter(r => r.status === "broken" || r.status === "timeout").length;
+        const redirected = results.filter(r => r.status === "redirect").length;
+
+        for (const result of results) {
+          await putResult({ ...result, report_id: reportId });
+        }
+
+        await putReport({
+          site_id: siteId, scanned_at: scannedAt, report_id: reportId, url,
+          total_links: results.length, broken_links: broken, redirected_links: redirected,
+          status: "completed", duration_ms: Date.now() - startTime, pages_scanned: pagesScanned,
+        });
+      } catch (err) {
+        console.error("Crawl failed:", err);
+        await putReport({
+          site_id: siteId, scanned_at: scannedAt, report_id: reportId, url,
+          total_links: 0, broken_links: 0, redirected_links: 0, status: "failed", duration_ms: Date.now() - startTime,
+        });
       }
-
-      await putReport({
-        site_id: siteId, scanned_at: scannedAt, report_id: reportId, url,
-        total_links: results.length, broken_links: broken, redirected_links: redirected,
-        status: "completed", duration_ms: Date.now() - startTime, pages_scanned: pagesScanned,
-      });
-    }).catch(async (err) => {
-      console.error("Crawl failed:", err);
-      await putReport({
-        site_id: siteId, scanned_at: scannedAt, report_id: reportId, url,
-        total_links: 0, broken_links: 0, redirected_links: 0, status: "failed", duration_ms: Date.now() - startTime,
-      });
     });
 
     return NextResponse.json({ reportId, status: "running" });
